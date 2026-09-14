@@ -1,4 +1,5 @@
 import UIKit
+import CoreText
 
 protocol FloatingMenuDelegate: AnyObject {
     func didSelectTool(isEraser: Bool, color: UIColor, width: CGFloat)
