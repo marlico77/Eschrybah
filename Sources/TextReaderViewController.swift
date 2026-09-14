@@ -33,9 +33,70 @@ class TextReaderViewController: UIViewController {
         ])
         
         loadText()
+        setupAnnotationMenu()
+    }
+    
+    private var canvasView: AnnotationCanvasView?
+    
+    private func setupAnnotationMenu() {
+        let optionsButton = UIBarButtonItem(title: "Opções", style: .plain, target: self, action: #selector(showOptionsMenu))
+        navigationItem.rightBarButtonItem = optionsButton
+    }
+    
+    @objc private func showOptionsMenu() {
+        let alert = UIAlertController(title: "Ferramentas", message: "Escolha uma ação", preferredStyle: .actionSheet)
         
-        let saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(saveText))
-        navigationItem.rightBarButtonItem = saveButton
+        let saveAction = UIAlertAction(title: "Salvar Texto", style: .default) { _ in
+            self.saveText()
+        }
+        
+        let toggleDrawing = UIAlertAction(title: canvasView == nil ? "Grifar na Tela (Vidro)" : "Desligar Vidro", style: .default) { _ in
+            self.toggleCanvas()
+        }
+        
+        let clearDrawing = UIAlertAction(title: "Limpar Grifos", style: .destructive) { _ in
+            self.canvasView?.clear()
+        }
+        
+        let cancel = UIAlertAction(title: "Cancelar", style: .cancel, handler: nil)
+        
+        alert.addAction(saveAction)
+        alert.addAction(toggleDrawing)
+        if canvasView != nil {
+            alert.addAction(clearDrawing)
+        }
+        alert.addAction(cancel)
+        
+        if let popover = alert.popoverPresentationController {
+            popover.barButtonItem = navigationItem.rightBarButtonItem
+        }
+        
+        present(alert, animated: true, completion: nil)
+    }
+    
+    private func toggleCanvas() {
+        if let canvas = canvasView {
+            canvas.removeFromSuperview()
+            canvasView = nil
+            textView.isScrollEnabled = true
+        } else {
+            let canvas = AnnotationCanvasView(frame: .zero)
+            canvas.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(canvas)
+            
+            NSLayoutConstraint.activate([
+                canvas.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                canvas.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                canvas.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                canvas.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+            canvasView = canvas
+            textView.isScrollEnabled = false
+            
+            let tip = UIAlertController(title: "Vidro Ativado", message: "A rolagem do texto foi travada para você poder desenhar por cima.", preferredStyle: .alert)
+            tip.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(tip, animated: true, completion: nil)
+        }
     }
     
     private func loadText() {

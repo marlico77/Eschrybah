@@ -25,10 +25,10 @@ jobs:
       - name: Build Archive
         run: |
           xcodebuild archive \
-            -project UniversalReader.xcodeproj \
-            -scheme UniversalReader \
+            -project Escriba.xcodeproj \
+            -scheme Escriba \
             -configuration Release \
-            -archivePath $PWD/build/UniversalReader.xcarchive \
+            -archivePath $PWD/build/Escriba.xcarchive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_ENTITLEMENTS="" \
@@ -37,13 +37,13 @@ jobs:
       - name: Package IPA
         run: |
           mkdir -p Payload
-          cp -r build/UniversalReader.xcarchive/Products/Applications/UniversalReader.app Payload/
-          zip -qr UniversalReader.ipa Payload
+          cp -r build/Escriba.xcarchive/Products/Applications/Escriba.app Payload/
+          zip -qr Escriba.ipa Payload
           rm -rf Payload
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: UniversalReader-IPA
-          path: UniversalReader.ipa
+          name: Escriba-IPA
+          path: Escriba.ipa
           retention-days: 7

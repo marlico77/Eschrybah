@@ -22,11 +22,12 @@ class DocumentCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         contentView.backgroundColor = .white
-        contentView.layer.cornerRadius = 8
+        contentView.layer.cornerRadius = 16 // Mais arredondado
         contentView.layer.shadowColor = UIColor.black.cgColor
-        contentView.layer.shadowOpacity = 0.1
-        contentView.layer.shadowOffset = CGSize(width: 0, height: 2)
-        contentView.layer.shadowRadius = 4
+        contentView.layer.shadowOpacity = 0.15
+        contentView.layer.shadowOffset = CGSize(width: 0, height: 4)
+        contentView.layer.shadowRadius = 8
+        contentView.layer.masksToBounds = false // Para garantir que a sombra apareça fora do cornerRadius
         
         contentView.addSubview(iconImageView)
         contentView.addSubview(titleLabel)

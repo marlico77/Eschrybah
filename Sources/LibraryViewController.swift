@@ -13,7 +13,7 @@ class LibraryViewController: UIViewController, UIDocumentPickerDelegate {
         layout.minimumLineSpacing = 20
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .groupTableViewBackground
+        cv.backgroundColor = .clear
         cv.delegate = self
         cv.dataSource = self
         cv.register(DocumentCell.self, forCellWithReuseIdentifier: "DocumentCell")
@@ -23,8 +23,9 @@ class LibraryViewController: UIViewController, UIDocumentPickerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Minha Biblioteca"
-        view.backgroundColor = .white
+        title = "Escriba"
+        // Cor creme clássica para fundo de leitura
+        view.backgroundColor = UIColor(red: 249/255, green: 246/255, blue: 240/255, alpha: 1.0)
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(importDocument))
         

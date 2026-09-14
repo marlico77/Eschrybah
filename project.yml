@@ -1,8 +1,8 @@
-name: UniversalReader
+name: Escriba
 options:
   bundleIdPrefix: com.marlon
 targets:
-  UniversalReader:
+  Escriba:
     type: application
     platform: iOS
     deploymentTarget: "12.0"
