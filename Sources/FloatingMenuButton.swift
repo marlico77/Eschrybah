@@ -25,9 +25,26 @@ class FloatingMenuButton: UIView {
         return UIFont(name: "FontAwesome6Free-Solid", size: 20) ?? UIFont.systemFont(ofSize: 20)
     }
     
+    private static var fontRegistered = false
+    
+    private func registerFont() {
+        guard !FloatingMenuButton.fontRegistered else { return }
+        guard let url = Bundle.main.url(forResource: "fa-solid-900", withExtension: "ttf") else {
+            print("Font file not found in bundle.")
+            return
+        }
+        var error: Unmanaged<CFError>?
+        if CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error) {
+            FloatingMenuButton.fontRegistered = true
+        } else {
+            print("Failed to register font: \(error.debugDescription)")
+        }
+    }
+    
     override init(frame: CGRect) {
         // Inicialmente tem o tamanho apenas do botão principal
         super.init(frame: CGRect(x: UIScreen.main.bounds.width - 64, y: 100, width: 44, height: 44))
+        registerFont()
         setupUI()
         setupGestures()
     }
