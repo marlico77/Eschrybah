@@ -96,7 +96,7 @@ class FloatingMenuButton: UIView {
     
     // MARK: - State Management
     
-    private func showMainTools() {
+    @objc private func showMainTools() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         let penBtn = createToolButton(icon: "\u{f304}", color: currentColor) // fa-pen
@@ -137,7 +137,7 @@ class FloatingMenuButton: UIView {
         updateContainerSize()
     }
     
-    private func createColorButton(color: UIColor) -> UIButton {
+    private func createColorButton(color: UIColor) -> UIView {
         let btn = UIButton(type: .system)
         btn.backgroundColor = color
         btn.layer.cornerRadius = 15
@@ -266,22 +266,22 @@ class FloatingMenuButton: UIView {
             mainButton.setTitleColor(.darkGray, for: .normal)
         }
         
+        var targetWidth: CGFloat = buttonSize
+        
         if isExpanded {
             toolsContainer.isHidden = false
             toolsContainer.alpha = 0
             showMainTools() // Always reset to main tools when opening
             let itemsCount = CGFloat(stackView.arrangedSubviews.count)
-            let newWidth = (buttonSize * itemsCount) + (spacing * (itemsCount + 1))
+            targetWidth = (buttonSize * itemsCount) + (spacing * (itemsCount + 1))
             self.toolsContainer.frame = CGRect(x: self.buttonSize/2, y: 0, width: self.buttonSize, height: self.buttonSize) // Start small from right
         }
         
         UIView.animate(withDuration: 0.3, animations: {
             if self.isExpanded {
                 self.toolsContainer.alpha = 1
-                let itemsCount = CGFloat(self.stackView.arrangedSubviews.count)
-                let newWidth = (self.buttonSize * itemsCount) + (self.spacing * (itemsCount + 1))
                 // Expandir para a esquerda
-                self.toolsContainer.frame = CGRect(x: -newWidth + self.buttonSize, y: 0, width: newWidth, height: self.buttonSize)
+                self.toolsContainer.frame = CGRect(x: -targetWidth + self.buttonSize, y: 0, width: targetWidth, height: self.buttonSize)
             } else {
                 self.toolsContainer.alpha = 0
                 self.toolsContainer.frame = CGRect(x: 0, y: 0, width: self.buttonSize, height: self.buttonSize)
