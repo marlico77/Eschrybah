@@ -23,7 +23,7 @@ class LibraryViewController: UIViewController, UIDocumentPickerDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Escribah"
+        title = "Eschrybah"
         // Cor creme clássica para fundo de leitura
         view.backgroundColor = UIColor(red: 249/255, green: 246/255, blue: 240/255, alpha: 1.0)
         

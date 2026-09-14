@@ -1,8 +1,8 @@
-name: Escribah
+name: Eschrybah
 options:
-  bundleIdPrefix: com.marlon
+  bundleIdPrefix: com.core
 targets:
-  Escribah:
+  Eschrybah:
     type: application
     platform: iOS
     deploymentTarget: "12.0"
