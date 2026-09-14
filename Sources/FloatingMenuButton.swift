@@ -99,10 +99,10 @@ class FloatingMenuButton: UIView {
     @objc private func showMainTools() {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
-        let penBtn = createToolButton(icon: "\u{f304}", color: currentColor) // fa-pen
+        let penBtn = createToolButton(icon: "\u{f304}", color: .darkGray) // fa-pen
         penBtn.addTarget(self, action: #selector(openColorsForPen), for: .touchUpInside)
         
-        let highBtn = createToolButton(icon: "\u{f591}", color: .yellow) // fa-highlighter
+        let highBtn = createToolButton(icon: "\u{f591}", color: .darkGray) // fa-highlighter
         highBtn.addTarget(self, action: #selector(selectHighlighter), for: .touchUpInside)
         
         let eraseBtn = createToolButton(icon: "\u{f12d}", color: .darkGray) // fa-eraser
@@ -224,7 +224,18 @@ class FloatingMenuButton: UIView {
         return btn
     }
     
-    // MARK: - Dragging
+    // MARK: - Dragging and Touch Handling
+    
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        if self.isHidden || !self.isUserInteractionEnabled || self.alpha < 0.01 { return nil }
+        for subview in self.subviews.reversed() {
+            let convertedPoint = subview.convert(point, from: self)
+            if let hitView = subview.hitTest(convertedPoint, with: event) {
+                return hitView
+            }
+        }
+        return super.hitTest(point, with: event)
+    }
     
     private func setupGestures() {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
