@@ -1,69 +1,142 @@
 import UIKit
 
+struct Stroke {
+    let path: UIBezierPath
+    let color: UIColor
+    let width: CGFloat
+    let blendMode: CGBlendMode
+}
+
 class AnnotationCanvasView: UIView {
     
-    private var paths: [UIBezierPath] = []
-    private var currentPath: UIBezierPath?
+    var drawingColor: UIColor = .systemYellow {
+        didSet { currentBlendMode = .normal }
+    }
+    var drawingWidth: CGFloat = 20.0
+    var isEraser: Bool = false
     
-    var drawingColor: UIColor = UIColor.systemYellow.withAlphaComponent(0.5)
-    var drawingWidth: CGFloat = 15.0
+    private var strokes: [Stroke] = []
+    private var undoneStrokes: [Stroke] = []
+    
+    private var currentPath: UIBezierPath?
+    private var currentBlendMode: CGBlendMode = .normal
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.backgroundColor = .clear
-        self.isUserInteractionEnabled = true
-        
-        // Add a visual indicator that glass mode is active
-        self.layer.borderWidth = 3
-        self.layer.borderColor = UIColor.systemBlue.cgColor
+        self.isMultipleTouchEnabled = false
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first else { return }
-        let location = touch.location(in: self)
-        
-        currentPath = UIBezierPath()
-        currentPath?.lineWidth = drawingWidth
-        currentPath?.lineCapStyle = .round
-        currentPath?.lineJoinStyle = .round
-        currentPath?.move(to: location)
-    }
+    // MARK: - Undo / Redo / Clear
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let touch = touches.first, let path = currentPath else { return }
-        let location = touch.location(in: self)
-        path.addLine(to: location)
+    func undo() {
+        guard !strokes.isEmpty else { return }
+        let stroke = strokes.removeLast()
+        undoneStrokes.append(stroke)
         setNeedsDisplay()
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        if let path = currentPath {
-            paths.append(path)
-        }
-        currentPath = nil
+    func redo() {
+        guard !undoneStrokes.isEmpty else { return }
+        let stroke = undoneStrokes.removeLast()
+        strokes.append(stroke)
         setNeedsDisplay()
     }
+    
+    func clear() {
+        strokes.removeAll()
+        undoneStrokes.removeAll()
+        setNeedsDisplay()
+    }
+    
+    // MARK: - Drawing Logic
     
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         
-        drawingColor.setStroke()
+        guard let context = UIGraphicsGetCurrentContext() else { return }
         
-        for path in paths {
-            path.stroke()
+        for stroke in strokes {
+            context.setBlendMode(stroke.blendMode)
+            stroke.color.setStroke()
+            stroke.path.lineWidth = stroke.width
+            stroke.path.lineCapStyle = .round
+            stroke.path.lineJoinStyle = .round
+            stroke.path.stroke()
         }
         
-        if let path = currentPath {
-            path.stroke()
+        if let currentPath = currentPath, !isEraser {
+            context.setBlendMode(currentBlendMode)
+            drawingColor.setStroke()
+            currentPath.lineWidth = drawingWidth
+            currentPath.lineCapStyle = .round
+            currentPath.lineJoinStyle = .round
+            currentPath.stroke()
         }
     }
     
-    func clear() {
-        paths.removeAll()
-        setNeedsDisplay()
+    // MARK: - Touch Handling
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let point = touch.location(in: self)
+        
+        if isEraser {
+            eraseStroke(at: point)
+        } else {
+            currentPath = UIBezierPath()
+            currentPath?.move(to: point)
+            undoneStrokes.removeAll() // Any new drawing invalidates redo history
+        }
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let point = touch.location(in: self)
+        
+        if isEraser {
+            eraseStroke(at: point)
+        } else {
+            currentPath?.addLine(to: point)
+            setNeedsDisplay()
+        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !isEraser, let path = currentPath {
+            let newStroke = Stroke(path: path, color: drawingColor, width: drawingWidth, blendMode: currentBlendMode)
+            strokes.append(newStroke)
+            currentPath = nil
+            setNeedsDisplay()
+        }
+    }
+    
+    // MARK: - Eraser Logic
+    
+    private func eraseStroke(at point: CGPoint) {
+        // Aumentamos a área de toque para facilitar a exclusão
+        let touchRect = CGRect(x: point.x - 20, y: point.y - 20, width: 40, height: 40)
+        
+        var indexesToRemove: [Int] = []
+        
+        for (index, stroke) in strokes.enumerated() {
+            if stroke.path.bounds.intersects(touchRect) {
+                // Checagem mais fina: iterar por pontos ou simplificar usando contains,
+                // mas UIBezierPath.contains é para preenchimento. Para strokes, usamos bounds
+                // ou criamos um stroked path (mais caro, mas no iOS 12 é ok para apps simples).
+                indexesToRemove.append(index)
+            }
+        }
+        
+        if !indexesToRemove.isEmpty {
+            for index in indexesToRemove.reversed() {
+                strokes.remove(at: index)
+            }
+            setNeedsDisplay()
+        }
     }
 }

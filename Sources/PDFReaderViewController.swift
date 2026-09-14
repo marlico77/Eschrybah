@@ -58,17 +58,18 @@ class PDFReaderViewController: UIViewController {
 }
 
 extension PDFReaderViewController: FloatingMenuDelegate {
-    func didSelectTool(color: UIColor, width: CGFloat) {
+    func didSelectTool(isEraser: Bool, color: UIColor, width: CGFloat) {
+        canvasView?.isEraser = isEraser
         canvasView?.drawingColor = color
         canvasView?.drawingWidth = width
     }
     
-    func didSelectClear() {
-        canvasView?.clear()
-    }
+    func didSelectUndo() { canvasView?.undo() }
+    func didSelectRedo() { canvasView?.redo() }
+    func didSelectClear() { canvasView?.clear() }
     
     func didToggleCanvas(isActive: Bool) {
-        if isActive {
+        if canvasView == nil {
             let canvas = AnnotationCanvasView(frame: .zero)
             canvas.translatesAutoresizingMaskIntoConstraints = false
             view.insertSubview(canvas, belowSubview: floatingMenu)
@@ -80,13 +81,15 @@ extension PDFReaderViewController: FloatingMenuDelegate {
                 canvas.trailingAnchor.constraint(equalTo: view.trailingAnchor)
             ])
             canvasView = canvas
-            
+        }
+        
+        if isActive {
+            canvasView?.isUserInteractionEnabled = true
             if let scrollView = pdfView.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView {
                 scrollView.isScrollEnabled = false
             }
         } else {
-            canvasView?.removeFromSuperview()
-            canvasView = nil
+            canvasView?.isUserInteractionEnabled = false
             if let scrollView = pdfView.subviews.first(where: { $0 is UIScrollView }) as? UIScrollView {
                 scrollView.isScrollEnabled = true
             }
