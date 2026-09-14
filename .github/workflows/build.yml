@@ -25,10 +25,10 @@ jobs:
       - name: Build Archive
         run: |
           xcodebuild archive \
-            -project Escriba.xcodeproj \
-            -scheme Escriba \
+            -project Escribah.xcodeproj \
+            -scheme Escribah \
             -configuration Release \
-            -archivePath $PWD/build/Escriba.xcarchive \
+            -archivePath $PWD/build/Escribah.xcarchive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_ENTITLEMENTS="" \
@@ -37,13 +37,13 @@ jobs:
       - name: Package IPA
         run: |
           mkdir -p Payload
-          cp -r build/Escriba.xcarchive/Products/Applications/Escriba.app Payload/
-          zip -qr Escriba.ipa Payload
+          cp -r build/Escribah.xcarchive/Products/Applications/Escribah.app Payload/
+          zip -qr Escribah.ipa Payload
           rm -rf Payload
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Escriba-IPA
-          path: Escriba.ipa
+          name: Escribah-IPA
+          path: Escribah.ipa
           retention-days: 7

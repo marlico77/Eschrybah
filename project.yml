@@ -1,8 +1,8 @@
-name: Escriba
+name: Escribah
 options:
   bundleIdPrefix: com.marlon
 targets:
-  Escriba:
+  Escribah:
     type: application
     platform: iOS
     deploymentTarget: "12.0"
