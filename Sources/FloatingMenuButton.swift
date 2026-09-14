@@ -16,8 +16,18 @@ class FloatingMenuButton: UIView {
     private let mainButton = UIButton(type: .system)
     private let stackView = UIStackView()
     
+    // Configurações do FAB
+    private let buttonSize: CGFloat = 44.0
+    private let spacing: CGFloat = 10.0
+    
+    // Fonte Awesome
+    private var faFont: UIFont {
+        return UIFont(name: "FontAwesome6Free-Solid", size: 20) ?? UIFont.systemFont(ofSize: 20)
+    }
+    
     override init(frame: CGRect) {
-        super.init(frame: CGRect(x: 0, y: 0, width: 60, height: 60))
+        // Inicialmente tem o tamanho apenas do botão principal
+        super.init(frame: CGRect(x: UIScreen.main.bounds.width - 64, y: 100, width: 44, height: 44))
         setupUI()
         setupGestures()
     }
@@ -29,63 +39,77 @@ class FloatingMenuButton: UIView {
     private func setupUI() {
         self.backgroundColor = .clear
         
-        mainButton.frame = CGRect(x: 0, y: 0, width: 60, height: 60)
-        mainButton.backgroundColor = UIColor(red: 40/255, green: 40/255, blue: 40/255, alpha: 1.0)
-        mainButton.setTitle("•••", for: .normal)
-        mainButton.setTitleColor(.white, for: .normal)
-        mainButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 24)
-        mainButton.layer.cornerRadius = 30
-        mainButton.layer.shadowColor = UIColor.black.cgColor
-        mainButton.layer.shadowOpacity = 0.3
-        mainButton.layer.shadowOffset = CGSize(width: 0, height: 4)
-        mainButton.layer.shadowRadius = 5
+        // Botão Principal
+        mainButton.frame = CGRect(x: 0, y: 0, width: buttonSize, height: buttonSize)
+        mainButton.backgroundColor = .white
+        mainButton.setTitle("\u{f142}", for: .normal) // fa-ellipsis-v
+        mainButton.titleLabel?.font = faFont
+        mainButton.setTitleColor(.darkGray, for: .normal)
+        mainButton.layer.cornerRadius = buttonSize / 2
+        applyShadow(to: mainButton)
         mainButton.addTarget(self, action: #selector(toggleMenu), for: .touchUpInside)
         
-        stackView.axis = .horizontal
-        stackView.spacing = 15
+        // StackView para os botões secundários (Expansão Vertical)
+        stackView.axis = .vertical
+        stackView.spacing = spacing
         stackView.alpha = 0
+        stackView.isHidden = true
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         self.addSubview(stackView)
         self.addSubview(mainButton)
         
         NSLayoutConstraint.activate([
-            stackView.centerYAnchor.constraint(equalTo: mainButton.centerYAnchor),
-            stackView.trailingAnchor.constraint(equalTo: mainButton.leadingAnchor, constant: -15)
+            stackView.topAnchor.constraint(equalTo: mainButton.bottomAnchor, constant: spacing),
+            stackView.centerXAnchor.constraint(equalTo: mainButton.centerXAnchor)
         ])
         
         setupTools()
     }
     
-    private func setupTools() {
-        let yellowBtn = createToolButton(color: UIColor.systemYellow.withAlphaComponent(0.5), title: "🖊️")
-        yellowBtn.addTarget(self, action: #selector(selectYellow), for: .touchUpInside)
-        
-        let redBtn = createToolButton(color: .red, title: "🖍️")
-        redBtn.addTarget(self, action: #selector(selectRed), for: .touchUpInside)
-        
-        let blueBtn = createToolButton(color: .blue, title: "📘")
-        blueBtn.addTarget(self, action: #selector(selectBlue), for: .touchUpInside)
-        
-        let clearBtn = createToolButton(color: .darkGray, title: "🗑️")
-        clearBtn.addTarget(self, action: #selector(clearCanvas), for: .touchUpInside)
-        
-        stackView.addArrangedSubview(clearBtn)
-        stackView.addArrangedSubview(blueBtn)
-        stackView.addArrangedSubview(redBtn)
-        stackView.addArrangedSubview(yellowBtn)
+    private func applyShadow(to view: UIView) {
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.25
+        view.layer.shadowOffset = CGSize(width: 0, height: 4)
+        view.layer.shadowRadius = 6
     }
     
-    private func createToolButton(color: UIColor, title: String) -> UIButton {
+    private func setupTools() {
+        // Ícones FontAwesome puros, tintados com as cores das canetas
+        let yellowBtn = createToolButton(icon: "\u{f591}", color: .systemYellow) // fa-highlighter
+        yellowBtn.addTarget(self, action: #selector(selectYellow), for: .touchUpInside)
+        
+        let redBtn = createToolButton(icon: "\u{f304}", color: .systemRed) // fa-pen
+        redBtn.addTarget(self, action: #selector(selectRed), for: .touchUpInside)
+        
+        let blueBtn = createToolButton(icon: "\u{f304}", color: .systemBlue) // fa-pen
+        blueBtn.addTarget(self, action: #selector(selectBlue), for: .touchUpInside)
+        
+        let clearBtn = createToolButton(icon: "\u{f12d}", color: .darkGray) // fa-eraser
+        clearBtn.addTarget(self, action: #selector(clearCanvas), for: .touchUpInside)
+        
+        stackView.addArrangedSubview(yellowBtn)
+        stackView.addArrangedSubview(redBtn)
+        stackView.addArrangedSubview(blueBtn)
+        stackView.addArrangedSubview(clearBtn)
+    }
+    
+    private func createToolButton(icon: String, color: UIColor) -> UIButton {
         let btn = UIButton(type: .system)
-        btn.backgroundColor = color.withAlphaComponent(0.8)
-        btn.setTitle(title, for: .normal)
-        btn.layer.cornerRadius = 20
-        btn.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        btn.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        btn.backgroundColor = .white
+        btn.setTitle(icon, for: .normal)
+        btn.setTitleColor(color, for: .normal)
+        btn.titleLabel?.font = faFont
+        btn.layer.cornerRadius = buttonSize / 2
+        applyShadow(to: btn)
+        
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.widthAnchor.constraint(equalToConstant: buttonSize).isActive = true
+        btn.heightAnchor.constraint(equalToConstant: buttonSize).isActive = true
         return btn
     }
     
+    // MARK: - Arrastar (Draggable)
     private func setupGestures() {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         self.addGestureRecognizer(pan)
@@ -99,50 +123,53 @@ class FloatingMenuButton: UIView {
         if gesture.state == .began || gesture.state == .changed {
             self.center = CGPoint(x: self.center.x + translation.x, y: self.center.y + translation.y)
             gesture.setTranslation(.zero, in: superview)
-        } else if gesture.state == .ended {
-            // Snap to edges logic could go here
         }
     }
     
+    // MARK: - Ações
     @objc private func toggleMenu() {
         isExpanded.toggle()
         
         if isExpanded && !canvasActive {
             canvasActive = true
             delegate?.didToggleCanvas(isActive: true)
-            mainButton.backgroundColor = .systemBlue
-            mainButton.setTitle("❌", for: .normal)
+            mainButton.setTitle("\u{f00d}", for: .normal) // fa-times
+            mainButton.setTitleColor(.systemRed, for: .normal)
         } else if !isExpanded {
             canvasActive = false
             delegate?.didToggleCanvas(isActive: false)
-            mainButton.backgroundColor = UIColor(red: 40/255, green: 40/255, blue: 40/255, alpha: 1.0)
-            mainButton.setTitle("•••", for: .normal)
+            mainButton.setTitle("\u{f142}", for: .normal) // fa-ellipsis-v
+            mainButton.setTitleColor(.darkGray, for: .normal)
         }
         
-        UIView.animate(withDuration: 0.3) {
+        if isExpanded {
+            self.stackView.isHidden = false
+            // Expande o frame para baixo para conter a stack view e permitir os toques nela
+            let itemsCount = CGFloat(stackView.arrangedSubviews.count)
+            let newHeight = buttonSize + spacing + (buttonSize * itemsCount) + (spacing * (itemsCount - 1))
+            self.frame.size.height = newHeight
+        }
+        
+        UIView.animate(withDuration: 0.3, animations: {
             self.stackView.alpha = self.isExpanded ? 1.0 : 0.0
-            if self.isExpanded {
-                self.frame.origin.x -= 250 // Expands to the left
-                self.frame.size.width += 250
-                self.mainButton.frame.origin.x += 250
-            } else {
-                self.mainButton.frame.origin.x -= 250
-                self.frame.size.width -= 250
-                self.frame.origin.x += 250
+        }) { _ in
+            if !self.isExpanded {
+                self.stackView.isHidden = true
+                self.frame.size.height = self.buttonSize // Retrai o frame
             }
         }
     }
     
     @objc private func selectYellow() {
-        delegate?.didSelectTool(color: UIColor.systemYellow.withAlphaComponent(0.5), width: 20)
+        delegate?.didSelectTool(color: UIColor.systemYellow.withAlphaComponent(0.5), width: 25)
     }
     
     @objc private func selectRed() {
-        delegate?.didSelectTool(color: .red, width: 3)
+        delegate?.didSelectTool(color: .systemRed, width: 3)
     }
     
     @objc private func selectBlue() {
-        delegate?.didSelectTool(color: .blue, width: 3)
+        delegate?.didSelectTool(color: .systemBlue, width: 3)
     }
     
     @objc private func clearCanvas() {

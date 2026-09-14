@@ -64,15 +64,7 @@ class EpubReaderViewController: UIViewController {
     private func setupFloatingMenu() {
         floatingMenu = FloatingMenuButton()
         floatingMenu.delegate = self
-        floatingMenu.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(floatingMenu)
-        
-        NSLayoutConstraint.activate([
-            floatingMenu.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            floatingMenu.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            floatingMenu.widthAnchor.constraint(equalToConstant: 300),
-            floatingMenu.heightAnchor.constraint(equalToConstant: 60)
-        ])
     }
 }
 
