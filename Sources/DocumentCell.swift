@@ -7,7 +7,7 @@ class DocumentCell: UICollectionViewCell {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
         iv.translatesAutoresizingMaskIntoConstraints = false
-        iv.tintColor = .systemBlue
+        iv.tintColor = .blue
         return iv
     }()
     
@@ -58,14 +58,14 @@ class DocumentCell: UICollectionViewCell {
         // Setup initial generic icon
         switch ext {
         case "pdf":
-            iconImageView.image = UIImage(named: "pdf_icon") ?? generatePlaceholder(color: .systemRed, text: "PDF")
+            iconImageView.image = UIImage(named: "pdf_icon") ?? generatePlaceholder(color: .red, text: "PDF")
             generatePDFThumbnail(url: url)
         case "epub":
-            iconImageView.image = UIImage(named: "epub_icon") ?? generatePlaceholder(color: .systemOrange, text: "ePUB")
+            iconImageView.image = UIImage(named: "epub_icon") ?? generatePlaceholder(color: .orange, text: "ePUB")
         case "txt", "md", "csv", "json":
-            iconImageView.image = UIImage(named: "txt_icon") ?? generatePlaceholder(color: .systemGray, text: "TXT")
+            iconImageView.image = UIImage(named: "txt_icon") ?? generatePlaceholder(color: .gray, text: "TXT")
         case "docx", "doc":
-            iconImageView.image = UIImage(named: "word_icon") ?? generatePlaceholder(color: .systemBlue, text: "DOC")
+            iconImageView.image = UIImage(named: "word_icon") ?? generatePlaceholder(color: .blue, text: "DOC")
         default:
             iconImageView.image = UIImage(named: "generic_icon") ?? generatePlaceholder(color: .lightGray, text: "FILE")
         }

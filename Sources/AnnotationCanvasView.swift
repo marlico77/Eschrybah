@@ -9,7 +9,7 @@ struct Stroke {
 
 class AnnotationCanvasView: UIView {
     
-    var drawingColor: UIColor = .systemYellow {
+    var drawingColor: UIColor = .yellow {
         didSet { currentBlendMode = .normal }
     }
     var drawingWidth: CGFloat = 20.0

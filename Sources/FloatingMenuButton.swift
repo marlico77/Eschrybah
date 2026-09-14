@@ -15,7 +15,7 @@ class FloatingMenuButton: UIView {
     private var isExpanded = false
     private var canvasActive = false
     
-    private var currentColor: UIColor = .systemBlue
+    private var currentColor: UIColor = .blue
     private var currentWidth: CGFloat = 3.0
     private var isHighlighter = false
     
@@ -101,7 +101,7 @@ class FloatingMenuButton: UIView {
         let penBtn = createToolButton(icon: "\u{f304}", color: currentColor) // fa-pen
         penBtn.addTarget(self, action: #selector(openColorsForPen), for: .touchUpInside)
         
-        let highBtn = createToolButton(icon: "\u{f591}", color: .systemYellow) // fa-highlighter
+        let highBtn = createToolButton(icon: "\u{f591}", color: .yellow) // fa-highlighter
         highBtn.addTarget(self, action: #selector(selectHighlighter), for: .touchUpInside)
         
         let eraseBtn = createToolButton(icon: "\u{f12d}", color: .darkGray) // fa-eraser
@@ -113,7 +113,7 @@ class FloatingMenuButton: UIView {
         let redoBtn = createToolButton(icon: "\u{f01e}", color: .darkGray) // fa-redo
         redoBtn.addTarget(self, action: #selector(doRedo), for: .touchUpInside)
         
-        let clearBtn = createToolButton(icon: "\u{f1f8}", color: .systemRed) // fa-trash
+        let clearBtn = createToolButton(icon: "\u{f1f8}", color: .red) // fa-trash
         clearBtn.addTarget(self, action: #selector(doClear), for: .touchUpInside)
         
         [penBtn, highBtn, eraseBtn, undoBtn, redoBtn, clearBtn].forEach { stackView.addArrangedSubview($0) }
@@ -125,9 +125,9 @@ class FloatingMenuButton: UIView {
         stackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         
         let blackBtn = createColorButton(color: .black)
-        let redBtn = createColorButton(color: .systemRed)
-        let blueBtn = createColorButton(color: .systemBlue)
-        let greenBtn = createColorButton(color: .systemGreen)
+        let redBtn = createColorButton(color: .red)
+        let blueBtn = createColorButton(color: .blue)
+        let greenBtn = createColorButton(color: .green)
         
         let backBtn = createToolButton(icon: "\u{f060}", color: .darkGray) // fa-arrow-left
         backBtn.addTarget(self, action: #selector(showMainTools), for: .touchUpInside)
@@ -201,7 +201,7 @@ class FloatingMenuButton: UIView {
     
     @objc private func selectHighlighter() {
         isHighlighter = true
-        delegate?.didSelectTool(isEraser: false, color: UIColor.systemYellow.withAlphaComponent(0.4), width: 25.0)
+        delegate?.didSelectTool(isEraser: false, color: UIColor.yellow.withAlphaComponent(0.4), width: 25.0)
     }
     
     @objc private func selectEraser() {
@@ -257,7 +257,7 @@ class FloatingMenuButton: UIView {
             canvasActive = true
             delegate?.didToggleCanvas(isActive: true)
             mainButton.setTitle("\u{f00d}", for: .normal) // fa-times
-            mainButton.setTitleColor(.systemRed, for: .normal)
+            mainButton.setTitleColor(.red, for: .normal)
         } else if !isExpanded {
             canvasActive = false
             delegate?.didToggleCanvas(isActive: false)
