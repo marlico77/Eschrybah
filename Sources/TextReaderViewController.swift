@@ -37,66 +37,27 @@ class TextReaderViewController: UIViewController {
     }
     
     private var canvasView: AnnotationCanvasView?
+    private var floatingMenu: FloatingMenuButton!
     
     private func setupAnnotationMenu() {
-        let optionsButton = UIBarButtonItem(title: "Opções", style: .plain, target: self, action: #selector(showOptionsMenu))
-        navigationItem.rightBarButtonItem = optionsButton
+        let saveButton = UIBarButtonItem(barButtonSystemItem: .save, target: self, action: #selector(saveText))
+        navigationItem.rightBarButtonItem = saveButton
+        
+        setupFloatingMenu()
     }
     
-    @objc private func showOptionsMenu() {
-        let alert = UIAlertController(title: "Ferramentas", message: "Escolha uma ação", preferredStyle: .actionSheet)
+    private func setupFloatingMenu() {
+        floatingMenu = FloatingMenuButton()
+        floatingMenu.delegate = self
+        floatingMenu.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(floatingMenu)
         
-        let saveAction = UIAlertAction(title: "Salvar Texto", style: .default) { _ in
-            self.saveText()
-        }
-        
-        let toggleDrawing = UIAlertAction(title: canvasView == nil ? "Grifar na Tela (Vidro)" : "Desligar Vidro", style: .default) { _ in
-            self.toggleCanvas()
-        }
-        
-        let clearDrawing = UIAlertAction(title: "Limpar Grifos", style: .destructive) { _ in
-            self.canvasView?.clear()
-        }
-        
-        let cancel = UIAlertAction(title: "Cancelar", style: .cancel, handler: nil)
-        
-        alert.addAction(saveAction)
-        alert.addAction(toggleDrawing)
-        if canvasView != nil {
-            alert.addAction(clearDrawing)
-        }
-        alert.addAction(cancel)
-        
-        if let popover = alert.popoverPresentationController {
-            popover.barButtonItem = navigationItem.rightBarButtonItem
-        }
-        
-        present(alert, animated: true, completion: nil)
-    }
-    
-    private func toggleCanvas() {
-        if let canvas = canvasView {
-            canvas.removeFromSuperview()
-            canvasView = nil
-            textView.isScrollEnabled = true
-        } else {
-            let canvas = AnnotationCanvasView(frame: .zero)
-            canvas.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(canvas)
-            
-            NSLayoutConstraint.activate([
-                canvas.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                canvas.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                canvas.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                canvas.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            ])
-            canvasView = canvas
-            textView.isScrollEnabled = false
-            
-            let tip = UIAlertController(title: "Vidro Ativado", message: "A rolagem do texto foi travada para você poder desenhar por cima.", preferredStyle: .alert)
-            tip.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            present(tip, animated: true, completion: nil)
-        }
+        NSLayoutConstraint.activate([
+            floatingMenu.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            floatingMenu.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            floatingMenu.widthAnchor.constraint(equalToConstant: 300),
+            floatingMenu.heightAnchor.constraint(equalToConstant: 60)
+        ])
     }
     
     private func loadText() {
@@ -117,6 +78,38 @@ class TextReaderViewController: UIViewController {
             present(alert, animated: true, completion: nil)
         } catch {
             print("Failed to save text: \(error)")
+        }
+    }
+}
+
+extension TextReaderViewController: FloatingMenuDelegate {
+    func didSelectTool(color: UIColor, width: CGFloat) {
+        canvasView?.drawingColor = color
+        canvasView?.drawingWidth = width
+    }
+    
+    func didSelectClear() {
+        canvasView?.clear()
+    }
+    
+    func didToggleCanvas(isActive: Bool) {
+        if isActive {
+            let canvas = AnnotationCanvasView(frame: .zero)
+            canvas.translatesAutoresizingMaskIntoConstraints = false
+            view.insertSubview(canvas, belowSubview: floatingMenu)
+            
+            NSLayoutConstraint.activate([
+                canvas.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                canvas.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                canvas.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                canvas.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            ])
+            canvasView = canvas
+            textView.isScrollEnabled = false
+        } else {
+            canvasView?.removeFromSuperview()
+            canvasView = nil
+            textView.isScrollEnabled = true
         }
     }
 }

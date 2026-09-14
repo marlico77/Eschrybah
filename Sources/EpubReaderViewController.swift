@@ -54,47 +54,43 @@ class EpubReaderViewController: UIViewController {
     }
     
     private var canvasView: AnnotationCanvasView?
+    private var floatingMenu: FloatingMenuButton!
     
     private func setupAnnotationMenu() {
-        let optionsButton = UIBarButtonItem(title: "Opções", style: .plain, target: self, action: #selector(showOptionsMenu))
-        navigationItem.rightBarButtonItem = optionsButton
+        navigationItem.rightBarButtonItem = nil
+        setupFloatingMenu()
     }
     
-    @objc private func showOptionsMenu() {
-        let alert = UIAlertController(title: "Ferramentas", message: "Escolha uma ação", preferredStyle: .actionSheet)
+    private func setupFloatingMenu() {
+        floatingMenu = FloatingMenuButton()
+        floatingMenu.delegate = self
+        floatingMenu.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(floatingMenu)
         
-        let toggleDrawing = UIAlertAction(title: canvasView == nil ? "Grifar na Tela (Vidro)" : "Desligar Vidro", style: .default) { _ in
-            self.toggleCanvas()
-        }
-        
-        let clearDrawing = UIAlertAction(title: "Limpar Grifos", style: .destructive) { _ in
-            self.canvasView?.clear()
-        }
-        
-        let cancel = UIAlertAction(title: "Cancelar", style: .cancel, handler: nil)
-        
-        alert.addAction(toggleDrawing)
-        if canvasView != nil {
-            alert.addAction(clearDrawing)
-        }
-        alert.addAction(cancel)
-        
-        if let popover = alert.popoverPresentationController {
-            popover.barButtonItem = navigationItem.rightBarButtonItem
-        }
-        
-        present(alert, animated: true, completion: nil)
+        NSLayoutConstraint.activate([
+            floatingMenu.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            floatingMenu.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            floatingMenu.widthAnchor.constraint(equalToConstant: 300),
+            floatingMenu.heightAnchor.constraint(equalToConstant: 60)
+        ])
+    }
+}
+
+extension EpubReaderViewController: FloatingMenuDelegate {
+    func didSelectTool(color: UIColor, width: CGFloat) {
+        canvasView?.drawingColor = color
+        canvasView?.drawingWidth = width
     }
     
-    private func toggleCanvas() {
-        if let canvas = canvasView {
-            canvas.removeFromSuperview()
-            canvasView = nil
-            webView.scrollView.isScrollEnabled = true
-        } else {
+    func didSelectClear() {
+        canvasView?.clear()
+    }
+    
+    func didToggleCanvas(isActive: Bool) {
+        if isActive {
             let canvas = AnnotationCanvasView(frame: .zero)
             canvas.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(canvas)
+            view.insertSubview(canvas, belowSubview: floatingMenu)
             
             NSLayoutConstraint.activate([
                 canvas.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -104,10 +100,10 @@ class EpubReaderViewController: UIViewController {
             ])
             canvasView = canvas
             webView.scrollView.isScrollEnabled = false
-            
-            let tip = UIAlertController(title: "Vidro Ativado", message: "A rolagem foi travada para você poder desenhar por cima.", preferredStyle: .alert)
-            tip.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            present(tip, animated: true, completion: nil)
+        } else {
+            canvasView?.removeFromSuperview()
+            canvasView = nil
+            webView.scrollView.isScrollEnabled = true
         }
     }
 }
